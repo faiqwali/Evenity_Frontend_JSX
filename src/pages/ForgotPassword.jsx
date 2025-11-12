@@ -27,14 +27,14 @@ const ForgotPassword = () => {
         text: "Please check your email for the OTP code",
         confirmButtonColor: "#2b4c91",
       }).then(() => {
-        navigate("/verify-otp", { state: { email: values.email } })
+        navigate("/verify-otp", { state: { email: values.email , purpose : 'forgot-password'}  })
       })
     },
   })
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
 
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto bg-white rounded-3xl overflow-hidden shadow-2xl">

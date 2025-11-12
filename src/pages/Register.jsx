@@ -1,27 +1,55 @@
-"use client"
-
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
-import { useFormik } from "formik"
-import * as Yup from "yup"
-import Swal from "sweetalert2"
-import Navbar from "@/components/Navbar"
+"use client";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import Swal from "sweetalert2";
+// Note: Navbar import removed since it wasn't being rendered in your previous snippet.
+// If you want Navbar back, uncomment the next line and add <Navbar /> where desired.
+// import Navbar from "@/components/Navbar";
 
 const Register = () => {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
-    email: Yup.string().email("Invalid email address").required("Email is required"),
-    password: Yup.string().min(8, "Must be at least 8 characters").required("Password is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+    role: Yup.string()
+      .oneOf(["admin", "attendee", "organizer"])
+      .required("Role is required"),
+    password: Yup.string()
+      .min(8, "Must be at least 8 characters")
+      .required("Password is required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password")], "Passwords must match")
       .required("Confirm password is required"),
-  })
+
+    // conditional organizer details
+    organizerDetails: Yup.object().when("role", (roleValue, schema) => {
+      if (roleValue === "organizer") {
+        return schema.shape({
+          organizationName: Yup.string().required("Organization name is required"),
+          organizerName: Yup.string().required("Organizer name is required"),
+          cnic: Yup.string().required("CNIC is required"),
+          phone: Yup.string().required("Phone is required"),
+          address: Yup.string().required("Address is required"),
+        });
+      }
+      return schema.shape({
+        organizationName: Yup.string().notRequired(),
+        organizerName: Yup.string().notRequired(),
+        cnic: Yup.string().notRequired(),
+        phone: Yup.string().notRequired(),
+        address: Yup.string().notRequired(),
+      });
+    }),
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -29,8 +57,16 @@ const Register = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      role: "attendee",
+      organizerDetails: {
+        organizationName: "",
+        organizerName: "",
+        cnic: "",
+        phone: "",
+        address: "",
+      },
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: (values) => {
       Swal.fire({
         icon: "success",
@@ -38,28 +74,293 @@ const Register = () => {
         text: "Welcome to TICKETER",
         confirmButtonColor: "#2b4c91",
       }).then(() => {
-        navigate("/login")
-      })
+        navigate("/verify-otp", { state: { purpose: "registration" }})
+      });
     },
-  })
+  });
+
+  const touchedOrganizer = (field) =>
+    formik.touched.organizerDetails && formik.touched.organizerDetails[field];
+  const errorOrganizer = (field) =>
+    formik.errors.organizerDetails && formik.errors.organizerDetails[field];
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto bg-white rounded-3xl overflow-hidden shadow-2xl">
-          {/* Left Side - Form */}
+      <div className="container mx-auto px-4 py-10">
+        <div className="max-w-9xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch bg-white rounded-3xl overflow-hidden shadow-2xl">
+          {/* FORM */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="p-12"
+            transition={{ duration: 0.45 }}
+            className="p-8 lg:p-10"
           >
             <form onSubmit={formik.handleSubmit}>
+              <div className="relative mb-4 flex items-center justify-center w-full">
+                <h1 className="text-3xl font-bold">SIGNUP</h1>
+              </div>
+
+              {/* Grid: two inputs per row on md+ */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Name */}
+                <div>
+                  <div className="relative">
+                    <User
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      aria-label="name"
+                      type="text"
+                      name="name"
+                      placeholder="Full name"
+                      value={formik.values.name}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="w-full pl-10 pr-3 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  {formik.touched.name && formik.errors.name && (
+                    <p className="text-destructive text-sm mt-1">
+                      {formik.errors.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <div className="relative">
+                    <Mail
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      aria-label="email"
+                      type="email"
+                      name="email"
+                      placeholder="Email address"
+                      value={formik.values.email}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="w-full pl-10 pr-3 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                  {formik.touched.email && formik.errors.email && (
+                    <p className="text-destructive text-sm mt-1">
+                      {formik.errors.email}
+                    </p>
+                  )}
+                </div>
+
+                {/* Role */}
+                <div>
+                  <select
+                    aria-label="role"
+                    name="role"
+                    value={formik.values.role}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="w-full pl-3 pr-3 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="attendee">Attendee</option>
+                    <option value="organizer">Organizer</option>
+                  </select>
+                  {formik.touched.role && formik.errors.role && (
+                    <p className="text-destructive text-sm mt-1">
+                      {formik.errors.role}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password (span both columns) */}
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Lock
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      aria-label="password"
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Create password"
+                      value={formik.values.password}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="w-full pl-10 pr-10 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      aria-label="toggle password visibility"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Minimum 8 characters.
+                  </p>
+                  {formik.touched.password && formik.errors.password && (
+                    <p className="text-destructive text-sm mt-1">
+                      {formik.errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm password */}
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Lock
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      aria-label="confirm password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Confirm password"
+                      value={formik.values.confirmPassword}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className="w-full pl-10 pr-10 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      aria-label="toggle confirm password visibility"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+                  {formik.touched.confirmPassword &&
+                    formik.errors.confirmPassword && (
+                      <p className="text-destructive text-sm mt-1">
+                        {formik.errors.confirmPassword}
+                      </p>
+                    )}
+                </div>
+              </div>
+
+              {/* Organizer details */}
+              {formik.values.role === "organizer" && (
+                <div className="mt-2 pt-6 ">
+                  <h3 className="text-center text-xl md:text-2xl font-bold mb-5">
+                    Organizer Details
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <input
+                        aria-label="organization name"
+                        name="organizerDetails.organizationName"
+                        placeholder="Organization name"
+                        value={formik.values.organizerDetails.organizationName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full pl-3 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {touchedOrganizer("organizationName") &&
+                        errorOrganizer("organizationName") && (
+                          <p className="text-destructive text-sm mt-1">
+                            {errorOrganizer("organizationName")}
+                          </p>
+                        )}
+                    </div>
+
+                    <div>
+                      <input
+                        aria-label="organizer name"
+                        name="organizerDetails.organizerName"
+                        placeholder="Organizer name"
+                        value={formik.values.organizerDetails.organizerName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full pl-3 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {touchedOrganizer("organizerName") &&
+                        errorOrganizer("organizerName") && (
+                          <p className="text-destructive text-sm mt-1">
+                            {errorOrganizer("organizerName")}
+                          </p>
+                        )}
+                    </div>
+
+                    <div>
+                      <input
+                        aria-label="cnic"
+                        name="organizerDetails.cnic"
+                        placeholder="CNIC"
+                        value={formik.values.organizerDetails.cnic}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full pl-3 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {touchedOrganizer("cnic") && errorOrganizer("cnic") && (
+                        <p className="text-destructive text-sm mt-1">
+                          {errorOrganizer("cnic")}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <input
+                        aria-label="phone"
+                        name="organizerDetails.phone"
+                        placeholder="Phone"
+                        value={formik.values.organizerDetails.phone}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full pl-3 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {touchedOrganizer("phone") && errorOrganizer("phone") && (
+                        <p className="text-destructive text-sm mt-1">
+                          {errorOrganizer("phone")}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <input
+                        aria-label="address"
+                        name="organizerDetails.address"
+                        placeholder="Address"
+                        value={formik.values.organizerDetails.address}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        className="w-full pl-3 pr-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      {touchedOrganizer("address") &&
+                        errorOrganizer("address") && (
+                          <p className="text-destructive text-sm mt-1">
+                            {errorOrganizer("address")}
+                          </p>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6">
+                <button
+                  type="submit"
+                  className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-accent transition-all hover-lift"
+                >
+                  Create an account
+                </button>
+              </div>
+
               <button
                 type="button"
-                className="w-full border-2 border-border py-3.5 rounded-xl font-medium hover:bg-secondary transition-all flex items-center justify-center space-x-2 mb-6"
+                className="w-full border-2 border-border py-3 rounded-xl font-medium hover:bg-secondary transition-all flex items-center justify-center space-x-2 mt-3"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5">
                   <path
@@ -82,146 +383,52 @@ const Register = () => {
                 <span>Sign in with Google</span>
               </button>
 
-              <div className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-muted-foreground">or</span>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Name</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Enter your first name"
-                    value={formik.values.name}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full pl-12 pr-4 py-3.5 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                {formik.touched.name && formik.errors.name && (
-                  <p className="text-destructive text-sm mt-1">{formik.errors.name}</p>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Enter your email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full pl-12 pr-4 py-3.5 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-                {formik.touched.email && formik.errors.email && (
-                  <p className="text-destructive text-sm mt-1">{formik.errors.email}</p>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Create a password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full pl-12 pr-12 py-3.5 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Must be at least 8 characters.</p>
-                {formik.touched.password && formik.errors.password && (
-                  <p className="text-destructive text-sm mt-1">{formik.errors.password}</p>
-                )}
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    placeholder="Confirm your password"
-                    value={formik.values.confirmPassword}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="w-full pl-12 pr-12 py-3.5 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-                  <p className="text-destructive text-sm mt-1">{formik.errors.confirmPassword}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-primary text-white py-3.5 rounded-xl font-semibold hover:bg-accent transition-all hover-lift mb-6"
-              >
-                Create an account
-              </button>
-
-              <p className="text-center text-sm">
+              <p className="text-center text-sm mt-4">
                 Already have an account?{" "}
-                <Link to="/login" className="text-foreground font-semibold hover:text-primary">
+                <Link
+                  to="/login"
+                  className="text-foreground font-semibold hover:text-primary"
+                >
                   Log In
                 </Link>
               </p>
             </form>
           </motion.div>
 
-          {/* Right Side - Image */}
+          {/* IMAGE PANEL: less overpowering, improved overlay & composition */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative bg-concert-blue overflow-hidden"
+            transition={{ duration: 0.45 }}
+            className="relative hidden lg:block"
+            aria-hidden="true"
           >
             <div className="absolute inset-0">
               <img
-                src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&h=1000&fit=crop"
+                src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1400&h=1800&fit=crop&q=80"
                 alt="Concert"
-                className="w-full h-full object-cover opacity-80"
+                className="w-full h-full object-cover object-right"
+                style={{ filter: "brightness(0.55) saturate(0.95)" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-concert-blue via-concert-blue/50 to-transparent"></div>
+              {/* Soft gradient to improve legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/20 to-transparent"></div>
             </div>
-            <div className="relative z-10 flex flex-col justify-center h-full p-12 text-white">
-              <h2 className="text-4xl font-bold mb-4">Welcome Here</h2>
-              <p className="text-lg text-white/90">Create an account to make reservations</p>
+
+            <div className="relative z-10 flex flex-col justify-center h-full p-10 text-white">
+              <div className="bg-black/25 backdrop-blur-sm rounded-2xl p-6 max-w-md mx-auto text-center">
+                <h2 className="text-3xl lg:text-4xl font-bold mb-3">
+                  Welcome Here
+                </h2>
+                <p className="text-sm lg:text-base text-white/90">
+                  Create an account to make reservations
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;

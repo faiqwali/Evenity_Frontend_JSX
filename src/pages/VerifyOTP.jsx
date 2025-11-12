@@ -4,11 +4,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Navbar from '@/components/Navbar';
 
+
+
+
 const VerifyOTP = () => {
+  const location = useLocation();
+  const { email, purpose } = location.state || {};
+
+
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const navigate = useNavigate();
-  const location = useLocation();
-  const email = location.state?.email || '';
+
 
   const handleChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -42,7 +48,12 @@ const VerifyOTP = () => {
         text: 'Proceed to reset your password',
         confirmButtonColor: '#2b4c91',
       }).then(() => {
-        navigate('/reset-password', { state: { email } });
+        if (purpose === 'forgot-password'){
+          navigate('/reset-password', { state: { email } });
+        } 
+        if (purpose === 'registration'){
+          navigate('/login');
+        } 
       });
     } else {
       Swal.fire({
@@ -56,7 +67,7 @@ const VerifyOTP = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
       
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto bg-white rounded-3xl overflow-hidden shadow-2xl">
