@@ -63,7 +63,7 @@ const EventDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
 
       {/* Hero Image */}
       <section className="relative h-96">
@@ -222,7 +222,7 @@ const EventDetails = () => {
         </div>
       </section>
 
-      <Footer />
+     
     </div>
   )
 }

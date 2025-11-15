@@ -89,9 +89,9 @@ const Index = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-
+    
+    
+    <>
       {/* Hero Section */}
       <section className="relative bg-concert-blue text-white py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-concert-blue to-concert-blue/80"></div>
@@ -286,8 +286,8 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
-    </div>
+      
+  </>
   )
 }
 
