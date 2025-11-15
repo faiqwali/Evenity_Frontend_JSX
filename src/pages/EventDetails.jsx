@@ -9,6 +9,7 @@ import * as Yup from "yup"
 import Swal from "sweetalert2"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import { Link } from "react-router-dom"
 
 const EventDetails = () => {
   const { id } = useParams()
@@ -208,12 +209,13 @@ const EventDetails = () => {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-primary text-white py-4 rounded-xl font-semibold hover:bg-accent transition-all hover-lift text-lg"
-                >
-                  Book Now
-                </button>
+                <Link to={`/payment`}>
+                      <button className="w-full bg-primary text-white py-4 rounded-xl font-semibold hover:bg-accent transition-all hover-lift text-lg">
+                        Book Now
+                      </button>
+                    </Link>
+
+               
               </form>
             </motion.div>
           </div>
