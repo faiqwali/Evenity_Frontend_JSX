@@ -68,7 +68,7 @@ const CategoryEvents = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+     
 
       {/* Header */}
       <section className="relative bg-concert-blue text-white py-20">
@@ -136,7 +136,7 @@ const CategoryEvents = () => {
         </div>
       </section>
 
-      <Footer />
+     
     </div>
   )
 }

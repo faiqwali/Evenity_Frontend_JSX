@@ -50,8 +50,8 @@ const Reviews = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    
+      <>
 
       {/* Header */}
       <section className="text-center py-16 border-b border-border">
@@ -116,8 +116,8 @@ const Reviews = () => {
         </div>
       </section>
 
-      <Footer />
-    </div>
+      </>
+    
   );
 };
 

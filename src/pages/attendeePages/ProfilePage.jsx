@@ -4,20 +4,26 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer"; // adjust path if your Navbar lives elsewhere
+import { Link } from "react-router-dom";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer"; // adjust path if your Navbar lives elsewhere
 
 const MySwal = withReactContent(Swal);
 
 // Validation for editable profile (password not edited here)
 const ProfileSchema = Yup.object({
-  name: Yup.string().min(3, "Too short").max(50, "Too long").required("Name is required"),
+  name: Yup.string()
+    .min(3, "Too short")
+    .max(50, "Too long")
+    .required("Name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
 });
 
 // Validation for password reset modal
 const PasswordSchema = Yup.object({
-  newPassword: Yup.string().min(8, "Minimum 8 characters").required("New password required"),
+  newPassword: Yup.string()
+    .min(8, "Minimum 8 characters")
+    .required("New password required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("newPassword")], "Passwords must match")
     .required("Confirm the new password"),
@@ -115,7 +121,11 @@ export default function ProfilePage() {
       const data = await res.json();
       if (res.ok) {
         // Update local user state and localStorage
-        const updatedUser = data.user ?? { ...user, ...values, avatar: avatarPreview };
+        const updatedUser = data.user ?? {
+          ...user,
+          ...values,
+          avatar: avatarPreview,
+        };
         if (!updatedUser.role) updatedUser.role = "attendee";
         setUser(updatedUser);
         try {
@@ -124,14 +134,26 @@ export default function ProfilePage() {
           /* ignore localStorage set error */
         }
 
-        MySwal.fire({ title: "Saved", text: "Profile updated successfully", icon: "success" });
+        MySwal.fire({
+          title: "Saved",
+          text: "Profile updated successfully",
+          icon: "success",
+        });
         setEditing(false);
       } else {
-        MySwal.fire({ title: "Error", text: data?.message || "Failed to save profile", icon: "error" });
+        MySwal.fire({
+          title: "Error",
+          text: data?.message || "Failed to save profile",
+          icon: "error",
+        });
       }
     } catch (err) {
       console.error(err);
-      MySwal.fire({ title: "Error", text: "Network error while saving profile", icon: "error" });
+      MySwal.fire({
+        title: "Error",
+        text: "Network error while saving profile",
+        icon: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -152,15 +174,27 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        MySwal.fire({ title: "Password Reset", text: "Password has been updated.", icon: "success" });
+        MySwal.fire({
+          title: "Password Reset",
+          text: "Password has been updated.",
+          icon: "success",
+        });
         setShowPasswordModal(false);
         resetForm();
       } else {
-        MySwal.fire({ title: "Error", text: data?.message || "Could not reset password", icon: "error" });
+        MySwal.fire({
+          title: "Error",
+          text: data?.message || "Could not reset password",
+          icon: "error",
+        });
       }
     } catch (err) {
       console.error(err);
-      MySwal.fire({ title: "Error", text: "Network error resetting password", icon: "error" });
+      MySwal.fire({
+        title: "Error",
+        text: "Network error resetting password",
+        icon: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -169,9 +203,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <>
-        <Navbar />
         <div className="p-6">Loading profile…</div>
-        <Footer />
       </>
     );
   }
@@ -179,14 +211,14 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <>
-        <Navbar />
         <div className="p-6">
           <div className="bg-white p-6 rounded shadow text-center">
             <h2 className="text-lg font-semibold">No user found</h2>
-            <p className="text-sm text-gray-600 mt-2">Please login to view your profile.</p>
+            <p className="text-sm text-gray-600 mt-2">
+              Please login to view your profile.
+            </p>
           </div>
         </div>
-        <Footer />
       </>
     );
   }
@@ -199,8 +231,6 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Navbar />
-
       <main className="p-6 bg-gray-50 min-h-screen">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white p-6 rounded shadow">
@@ -208,7 +238,11 @@ export default function ProfilePage() {
               {/* avatar */}
               <div className="relative">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="avatar" className="w-28 h-28 rounded-full object-cover border" />
+                  <img
+                    src={avatarPreview}
+                    alt="avatar"
+                    className="w-28 h-28 rounded-full object-cover border"
+                  />
                 ) : (
                   <div className="w-28 h-28 rounded-full bg-indigo-600 text-white flex items-center justify-center text-2xl font-bold">
                     {getInitials(initialValues.name || user.email)}
@@ -218,10 +252,19 @@ export default function ProfilePage() {
                 <div className="absolute right-0 bottom-0 flex gap-2">
                   <label className="bg-white border px-2 py-1 rounded shadow cursor-pointer text-xs hover:bg-gray-100">
                     Change
-                    <input ref={inputFileRef} type="file" accept="image/*" onChange={handleAvatarSelect} className="hidden" />
+                    <input
+                      ref={inputFileRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarSelect}
+                      className="hidden"
+                    />
                   </label>
                   {avatarPreview && (
-                    <button onClick={handleRemoveAvatar} className="bg-white border px-2 py-1 rounded shadow text-xs hover:bg-gray-100">
+                    <button
+                      onClick={handleRemoveAvatar}
+                      className="bg-white border px-2 py-1 rounded shadow text-xs hover:bg-gray-100"
+                    >
                       Remove
                     </button>
                   )}
@@ -231,7 +274,9 @@ export default function ProfilePage() {
               <div className="flex-1 w-full">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-semibold">{user.name ?? user.displayName}</h2>
+                    <h2 className="text-2xl font-semibold">
+                      {user.name ?? user.displayName}
+                    </h2>
                     <div className="text-sm text-gray-600">{user.email}</div>
                     <div className="mt-2">
                       <span className="inline-block text-xs px-3 py-1 rounded bg-gray-100 text-gray-700 font-medium">
@@ -243,16 +288,26 @@ export default function ProfilePage() {
                   <div>
                     {!editing ? (
                       <div className="flex gap-2">
-                        <button onClick={() => setEditing(true)} className="px-4 py-2 bg-indigo-600 text-white rounded shadow">
+                        <button
+                          onClick={() => setEditing(true)}
+                          className="px-4 py-2 bg-indigo-600 text-white rounded shadow"
+                        >
                           Edit
                         </button>
-                        <button onClick={() => setShowPasswordModal(true)} className="px-4 py-2 bg-gray-100 rounded">
-                          Reset Password
-                        </button>
+                        <Link to={`/reset-password`}>
+                          <button className="px-4 py-2 bg-gray-100 rounded">
+                            Reset Password
+                          </button>
+                        </Link>
+
+                       
                       </div>
                     ) : (
                       <div className="flex gap-2">
-                        <button onClick={() => setEditing(false)} className="px-4 py-2 bg-gray-100 rounded">
+                        <button
+                          onClick={() => setEditing(false)}
+                          className="px-4 py-2 bg-gray-100 rounded"
+                        >
                           Cancel
                         </button>
                       </div>
@@ -261,48 +316,88 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mt-6">
-                  <Formik initialValues={initialValues} validationSchema={ProfileSchema} onSubmit={saveProfile} enableReinitialize>
+                  <Formik
+                    initialValues={initialValues}
+                    validationSchema={ProfileSchema}
+                    onSubmit={saveProfile}
+                    enableReinitialize
+                  >
                     {({ isSubmitting }) => (
                       <Form className="grid grid-cols-1 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Name</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Name
+                          </label>
                           <Field
                             name="name"
                             disabled={!editing}
-                            className={`mt-1 block w-full border rounded px-3 py-2 ${editing ? "" : "bg-gray-50 cursor-not-allowed"}`}
+                            className={`mt-1 block w-full border rounded px-3 py-2 ${
+                              editing ? "" : "bg-gray-50 cursor-not-allowed"
+                            }`}
                             placeholder="Full name"
                           />
-                          <ErrorMessage name="name" component="div" className="text-xs text-red-600 mt-1" />
+                          <ErrorMessage
+                            name="name"
+                            component="div"
+                            className="text-xs text-red-600 mt-1"
+                          />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Email</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Email
+                          </label>
                           <Field
                             name="email"
                             disabled={!editing}
-                            className={`mt-1 block w-full border rounded px-3 py-2 ${editing ? "" : "bg-gray-50 cursor-not-allowed"}`}
+                            className={`mt-1 block w-full border rounded px-3 py-2 ${
+                              editing ? "" : "bg-gray-50 cursor-not-allowed"
+                            }`}
                             placeholder="Email address"
                           />
-                          <ErrorMessage name="email" component="div" className="text-xs text-red-600 mt-1" />
+                          <ErrorMessage
+                            name="email"
+                            component="div"
+                            className="text-xs text-red-600 mt-1"
+                          />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Role</label>
-                          <div className="mt-1 block w-full border rounded px-3 py-2 bg-gray-50">{user.role ?? "attendee"}</div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Role
+                          </label>
+                          <div className="mt-1 block w-full border rounded px-3 py-2 bg-gray-50">
+                            {user.role ?? "attendee"}
+                          </div>
                         </div>
 
                         {/* password field should not be editable; we show masked with reset button above */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Password</label>
-                          <div className="mt-1 block w-full border rounded px-3 py-2 bg-gray-50">••••••••</div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Password
+                          </label>
+                          <div className="mt-1 block w-full border rounded px-3 py-2 bg-gray-50">
+                            ••••••••
+                          </div>
                         </div>
 
                         {editing && (
                           <div className="flex items-center gap-2">
-                            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-indigo-600 text-white rounded shadow">
+                            <button
+                              type="submit"
+                              disabled={isSubmitting}
+                              className="px-4 py-2 bg-indigo-600 text-white rounded shadow"
+                            >
                               {isSubmitting ? "Saving..." : "Save Changes"}
                             </button>
-                            <button type="button" onClick={() => { setEditing(false); loadUserFromStorageOrApi(); }} className="px-4 py-2 bg-gray-100 rounded">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditing(false);
+                                loadUserFromStorageOrApi();
+                              }}
+                              className="px-4 py-2 bg-gray-100 rounded"
+                            >
                               Cancel
                             </button>
                           </div>
@@ -320,48 +415,6 @@ export default function ProfilePage() {
       </main>
 
       {/* Password reset modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowPasswordModal(false)} />
-          <div className="relative z-10 bg-white rounded shadow-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-2">Reset Password</h3>
-            <p className="text-sm text-gray-600 mb-4">Enter a new password for your account.</p>
-
-            <Formik
-              initialValues={{ newPassword: "", confirmPassword: "" }}
-              validationSchema={PasswordSchema}
-              onSubmit={handlePasswordReset}
-            >
-              {({ isSubmitting }) => (
-                <Form className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium">New password</label>
-                    <Field name="newPassword" type="password" className="mt-1 block w-full border rounded px-3 py-2" />
-                    <ErrorMessage name="newPassword" component="div" className="text-xs text-red-600 mt-1" />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium">Confirm password</label>
-                    <Field name="confirmPassword" type="password" className="mt-1 block w-full border rounded px-3 py-2" />
-                    <ErrorMessage name="confirmPassword" component="div" className="text-xs text-red-600 mt-1" />
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <button type="button" onClick={() => setShowPasswordModal(false)} className="px-3 py-1 bg-gray-100 rounded">
-                      Cancel
-                    </button>
-                    <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-indigo-600 text-white rounded">
-                      {isSubmitting ? "Saving..." : "Reset Password"}
-                    </button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </div>
-      )}
-
-  <Footer />
     </>
   );
 }

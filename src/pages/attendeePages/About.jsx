@@ -7,7 +7,7 @@ import Footer from "@/components/Footer"
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      
 
       {/* Header */}
       <section className="text-center py-16 border-b border-border">
@@ -65,7 +65,7 @@ const About = () => {
         </motion.div>
       </section>
 
-      <Footer />
+     
     </div>
   )
 }

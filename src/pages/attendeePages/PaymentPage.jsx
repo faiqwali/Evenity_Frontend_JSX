@@ -44,8 +44,8 @@ const Payment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+    
+    <>
 
       {/* Payment Container */}
       <div className="flex-1 flex items-center justify-center px-4 py-20">
@@ -130,8 +130,7 @@ const Payment = () => {
         </div>
       </div>
 
-      <Footer />
-    </div>
+     </>
   )
 }
 
